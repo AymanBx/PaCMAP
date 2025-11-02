@@ -109,8 +109,8 @@ class DatasetLoader:
             X = data['X'] if 'X' in data else data['data']
             y = data['y'] if 'y' in data else data.get('labels', None)
         else:
-            X = np.load(data_path)
-            y = np.load(labels_path) if labels_path else None
+            X = np.load(data_path, allow_pickle=True)
+            y = np.load(labels_path, allow_pickle=True) if labels_path else None
 
         # If no labels, generate dummy ones
         if y is None:
