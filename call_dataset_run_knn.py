@@ -39,3 +39,8 @@ mnist_loader = DatasetLoader(
     test_labels='datasets/MNIST/t10k-labels.idx1-ubyte'
 )
 run_knn("mnist", mnist_loader)
+
+
+# Load olivetti dataset
+olivetti_loader = DatasetLoader('npy', data_path='Datasets\olivetti\olivetti_faces.npy', labels_path='Datasets\olivetti\olivetti_faces_target.npy')
+run_knn("olivetti", olivetti_loader)

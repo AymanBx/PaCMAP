@@ -10,14 +10,17 @@ from sklearn.model_selection import train_test_split
 class DatasetLoader:
     def __init__(self, dataset_type, **kwargs):
         """
-        dataset_type: 'coil20' or 'mnist'
-        kwargs: arguments depending on dataset_type
+        dataset_type: 'coil20', 'mnist', or 'npy'
+        kwargs:
+            For 'coil20': dataset_path='...'
+            For 'mnist': training_images='...', training_labels='...', test_images='...', test_labels='...'
+            For 'npy': data_path='...', labels_path='...'  (or a single npz file with both)
         """
         self.dataset_type = dataset_type.lower()
         self.kwargs = kwargs
 
-        if self.dataset_type not in ('coil20', 'mnist'):
-            raise ValueError("dataset_type must be either 'coil20' or 'mnist'")
+        if self.dataset_type not in ('coil20', 'mnist', 'npy'):
+            raise ValueError("dataset_type must be one of: 'coil20', 'mnist', 'npy'")
 
     # -------------------------------
     # COIL-20
@@ -92,10 +95,43 @@ class DatasetLoader:
         return (x_train, y_train), (x_test, y_test)
 
     # -------------------------------
-    # call loader
+    # Generic NumPy Dataset (.npy / .npz)
+    # -------------------------------
+    def _load_npy(self):
+        data_path = self.kwargs.get('data_path')
+        labels_path = self.kwargs.get('labels_path')
+        if not data_path:
+            raise ValueError("Missing 'data_path' argument for npy dataset")
+
+        # Handle .npy or .npz
+        if data_path.endswith('.npz'):
+            data = np.load(data_path)
+            X = data['X'] if 'X' in data else data['data']
+            y = data['y'] if 'y' in data else data.get('labels', None)
+        else:
+            X = np.load(data_path)
+            y = np.load(labels_path) if labels_path else None
+
+        # If no labels, generate dummy ones
+        if y is None:
+            y = np.zeros(len(X), dtype=int)
+
+        # Normalize or reshape if needed
+        if X.ndim > 2:
+            X = X.reshape(X.shape[0], -1)
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, stratify=y if len(np.unique(y)) > 1 else None, random_state=1
+        )
+        return (X_train, y_train), (X_test, y_test)
+
+    # -------------------------------
+    # Call Loader
     # -------------------------------
     def load_data(self):
         if self.dataset_type == 'coil20':
             return self._load_coil20()
         elif self.dataset_type == 'mnist':
             return self._load_mnist()
+        elif self.dataset_type == 'npy':
+            return self._load_npy()
