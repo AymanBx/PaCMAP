@@ -6,7 +6,7 @@ from DataLoader import DatasetLoader
 from knn import run_knn
 from trustworthiness_eval import pacmap_embedding
 from trustworthiness_eval import pca_embedding
-from trustworthiness_eval import trustworthiness
+from trustworthiness_eval import run_trustworthiness
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 
@@ -18,7 +18,7 @@ eval_metric = sys.argv[3] or None
 # if type(dataset) != list
 match dataset:
     case 'coil20':
-       loader = DatasetLoader('dataset',
+       loader = DatasetLoader('coil20',
                 dataset_path='datasets/coil-20'
                 )
     case 'coil20-npy':
@@ -27,7 +27,7 @@ match dataset:
                 labels_path='datasets/coil20/coil_20_labels.npy'
                 )
     case 'mnist':
-        loader = DatasetLoader('dataset',
+        loader = DatasetLoader('mnist',
                 training_images='datasets/MNIST/train-images.idx3-ubyte',
                 training_labels='datasets/MNIST/train-labels.idx1-ubyte',
                 test_images='datasets/MNIST/t10k-images.idx3-ubyte',
@@ -73,7 +73,7 @@ run_knn(dataset, X_train_embedded, y_train, X_test_embedded, y_test)
 
 # visualize the reducer
 fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-ax.scatter(X_transformed[:, 0], X_transformed[:, 1], cmap="Spectral", c=y, s=0.6)
+ax.scatter(X_train_embedded[:, 0], X_train_embedded[:, 1], cmap="Spectral", c=y_train, s=0.6)
 plt.savefig('after.png')
 
 
