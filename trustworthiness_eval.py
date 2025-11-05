@@ -1,13 +1,15 @@
-from DataLoader import DatasetLoader
-from sklearn.manifold import trustworthiness
 import numpy as np
+from pacmap import PaCMAP
+from DataLoader import DatasetLoader
+from sklearn.decomposition import PCA
+from sklearn.manifold import trustworthiness
 
-def run_trustworthiness(db_name, loader, embedding_func, n_neighbors_list=[5, 10, 15]):
+def run_trustworthiness(db_name, X_train, y_train, X_test, y_test, embedding_func, n_neighbors_list=[5, 10, 15]):
     """
     Computes trustworthiness between original data and reduced embeddings.
     """
+    
     print("Run Trustworthiness on ==> ", db_name)
-    (X_train, y_train), (X_test, y_test) = loader.load_data()
 
     # Flatten if necessary
     X_train = np.array(X_train)
@@ -31,10 +33,6 @@ def run_trustworthiness(db_name, loader, embedding_func, n_neighbors_list=[5, 10
 
 
 # You can pass any embedding function you want. For example PaCMAP or PCA:
-
-from pacmap import PaCMAP
-from sklearn.decomposition import PCA
-
 def pacmap_embedding(X):
     return PaCMAP(random_state=42, n_components=2).fit_transform(X)
 
@@ -42,11 +40,3 @@ def pca_embedding(X):
     return PCA(n_components=2).fit_transform(X)
 
 
-
-# Coil 20
-coil_loader = DatasetLoader(
-    'npy',
-    data_path='Datasets/coil20/coil_20.npy',
-    labels_path='Datasets/coil20/coil_20_labels.npy'
-)
-run_trustworthiness("Coil 20", coil_loader, embedding_func=pacmap_embedding)
