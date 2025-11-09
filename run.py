@@ -19,24 +19,24 @@ eval_metric = sys.argv[3] or None
 match dataset:
     case 'coil20':
        loader = DatasetLoader('coil20',
-                dataset_path='datasets/coil-20'
+                dataset_path='../datasets/coil-20'
                 )
     case 'coil20-npy':
         loader = DatasetLoader('npy',
-                data_path='datasets/coil20/coil_20.npy',
-                labels_path='datasets/coil20/coil_20_labels.npy'
+                data_path='../datasets/coil20/coil_20.npy',
+                labels_path='../datasets/coil20/coil_20_labels.npy'
                 )
     case 'mnist':
         loader = DatasetLoader('mnist',
-                training_images='datasets/MNIST/train-images.idx3-ubyte',
-                training_labels='datasets/MNIST/train-labels.idx1-ubyte',
-                test_images='datasets/MNIST/t10k-images.idx3-ubyte',
-                test_labels='datasets/MNIST/t10k-labels.idx1-ubyte'
+                training_images='../datasets/MNIST/train-images.idx3-ubyte',
+                training_labels='../datasets/MNIST/train-labels.idx1-ubyte',
+                test_images='../datasets/MNIST/t10k-images.idx3-ubyte',
+                test_labels='../datasets/MNIST/t10k-labels.idx1-ubyte'
                 )
     case 'olivetti':
         loader = DatasetLoader('npy', 
-                data_path='datasets/olivetti/olivetti_faces.npy', 
-                labels_path='datasets/olivetti/olivetti_faces_target.npy'
+                data_path='../datasets/olivetti/olivetti_faces.npy', 
+                labels_path='../datasets/olivetti/olivetti_faces_target.npy'
                 )
 
 match reducer_type:
@@ -47,7 +47,7 @@ match reducer_type:
 (X_train, y_train), (X_test, y_test) = loader.load_data()
 
 # Get trustworthiness
-run_trustworthiness(dataset, X_train, y_train, X_test, y_test, embedding_func=reducer)
+#run_trustworthiness(dataset, X_train, y_train, X_test, y_test, embedding_func=reducer)
 
 
 # run knn
@@ -63,8 +63,7 @@ X_test_flat = X_test.reshape(X_test.shape[0], -1)
 
 
 # initializing the DR instance
-X_train_embedded = reducer(X_train_flat)
-X_test_embedded = reducer(X_test_flat)
+X_train_embedded, X_test_embedded = reducer(X_train_flat, X_test_flat)
 
 print("KNN After:")
 run_knn(dataset, X_train_embedded, y_train, X_test_embedded, y_test)

@@ -22,8 +22,7 @@ def run_trustworthiness(db_name, X_train, y_train, X_test, y_test, embedding_fun
 
     # Generate embeddings
     print("Generating embeddings...")
-    X_train_embedded = embedding_func(X_train_flat)
-    X_test_embedded = embedding_func(X_test_flat)
+    X_train_embedded, X_test_embedded = embedding_func(X_train_flat, X_test_flat)
 
     # Evaluate trustworthiness
     for k in n_neighbors_list:
@@ -33,10 +32,18 @@ def run_trustworthiness(db_name, X_train, y_train, X_test, y_test, embedding_fun
 
 
 # You can pass any embedding function you want. For example PaCMAP or PCA:
-def pacmap_embedding(X):
-    return PaCMAP(random_state=42, n_components=2).fit_transform(X)
+def pacmap_embedding(X_train, X_test):
+    pacmap_reducer = PaCMAP(random_state=42, n_components=2)
+    X_train_embedded = pacmap_reducer.fit_transform(X_train)
+    X_test_embedded  = pacmap_reducer.transform(X_test, X_train)
+    return X_train_embedded, X_test_embedded
 
-def pca_embedding(X):
-    return PCA(n_components=2).fit_transform(X)
+def pca_embedding(X_train, X_test):
+    # Initialize PCA and fit/transform on the training data
+    pca = PCA(n_components=2)
+    X_train_embedded = pca.fit_transform(X_train)
+    # Transform the test data using the same PCA model
+    X_test_embedded = pca.transform(X_test)
+    return X_train_embedded, X_test_embedded
 
 
