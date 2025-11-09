@@ -8,7 +8,6 @@ def run_trustworthiness(db_name, X_train, y_train, X_test, y_test, embedding_fun
     """
     Computes trustworthiness between original data and reduced embeddings.
     """
-    
     print("Run Trustworthiness on ==> ", db_name)
 
     # Flatten if necessary
