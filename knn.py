@@ -5,7 +5,7 @@ from sklearn.neighbors import KNeighborsClassifier
 def run_knn(db_name, X_train, y_train, X_test, y_test):
     print("Run KNN on ==> ", db_name)
     
-
+    # Flatten if necessary
     x_train = np.array(X_train)
     x_test = np.array(X_test)
     x_train_flat = x_train.reshape(x_train.shape[0], -1)

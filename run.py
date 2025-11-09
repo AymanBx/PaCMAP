@@ -11,9 +11,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 
 
-dataset = sys.argv[1] or input("Which dataset would you like to test with?\n")
-reducer_type = sys.argv[2] or "pacmap"
-eval_metric = sys.argv[3] or None
+dataset = sys.argv[1] if len(sys.argv) > 1 else input("Which dataset would you like to test with?\n")
+reducer_type = sys.argv[2] if len(sys.argv) > 2 else "pacmap"
+eval_metric = sys.argv[3] if len(sys.argv) > 3 else None
 
 # if type(dataset) != list
 match dataset:
@@ -28,10 +28,10 @@ match dataset:
                 )
     case 'mnist':
         loader = DatasetLoader('mnist',
-                training_images='../datasets/MNIST/train-images.idx3-ubyte',
-                training_labels='../datasets/MNIST/train-labels.idx1-ubyte',
-                test_images='../datasets/MNIST/t10k-images.idx3-ubyte',
-                test_labels='../datasets/MNIST/t10k-labels.idx1-ubyte'
+                training_images='datasets/MNIST/train-images.idx3-ubyte',
+                training_labels='datasets/MNIST/train-labels.idx1-ubyte',
+                test_images='datasets/MNIST/t10k-images.idx3-ubyte',
+                test_labels='datasets/MNIST/t10k-labels.idx1-ubyte'
                 )
     case 'olivetti':
         loader = DatasetLoader('npy', 
@@ -46,20 +46,20 @@ match reducer_type:
 # loading preprocessed 
 (X_train, y_train), (X_test, y_test) = loader.load_data()
 
+# Flatten if necessary / flatten is used also reducer, so instead it of doing it in each function, do it once
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+X_train_flat = X_train.reshape(X_train.shape[0], -1)
+X_test_flat = X_test.reshape(X_test.shape[0], -1)
+
+
 # Get trustworthiness
-#run_trustworthiness(dataset, X_train, y_train, X_test, y_test, embedding_func=reducer)
+run_trustworthiness(dataset, X_train_flat, y_train, X_test_flat, y_test, embedding_func=reducer)
 
 
 # run knn
 print("KNN Before:")
 run_knn(dataset, X_train, y_train, X_test, y_test)
-
-
-# Flatten if necessary
-X_train = np.array(X_train)
-X_test = np.array(X_test)
-X_train_flat = X_train.reshape(X_train.shape[0], -1)
-X_test_flat = X_test.reshape(X_test.shape[0], -1)
 
 
 # initializing the DR instance

@@ -8,26 +8,19 @@ def run_trustworthiness(db_name, X_train, y_train, X_test, y_test, embedding_fun
     """
     Computes trustworthiness between original data and reduced embeddings.
     """
-    
     print("Run Trustworthiness on ==> ", db_name)
 
-    # Flatten if necessary
-    X_train = np.array(X_train)
-    X_test = np.array(X_test)
-    X_train_flat = X_train.reshape(X_train.shape[0], -1)
-    X_test_flat = X_test.reshape(X_test.shape[0], -1)
-
-    print("X_train flattened shape:", X_train_flat.shape)
-    print("X_test flattened shape:", X_test_flat.shape)
+    print("X_train flattened shape:", X_train.shape)
+    print("X_test flattened shape:", X_test.shape)
 
     # Generate embeddings
     print("Generating embeddings...")
-    X_train_embedded, X_test_embedded = embedding_func(X_train_flat, X_test_flat)
+    X_train_embedded, X_test_embedded = embedding_func(X_train, X_test)
 
     # Evaluate trustworthiness
     for k in n_neighbors_list:
-        tw_train = trustworthiness(X_train_flat, X_train_embedded, n_neighbors=k)
-        tw_test = trustworthiness(X_test_flat, X_test_embedded, n_neighbors=k)
+        tw_train = trustworthiness(X_train, X_train_embedded, n_neighbors=k)
+        tw_test = trustworthiness(X_test, X_test_embedded, n_neighbors=k)
         print(f"Trustworthiness (k={k}) - Train: {tw_train:.4f}, Test: {tw_test:.4f}")
 
 
