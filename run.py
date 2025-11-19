@@ -8,6 +8,7 @@ from trustworthiness_eval import pacmap_embedding
 from trustworthiness_eval import pca_embedding
 from trustworthiness_eval import run_trustworthiness
 from mrre import run_mrre
+from continuity import run_continuity
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 
@@ -69,8 +70,8 @@ X_train_embedded, X_test_embedded = reducer(X_train_flat, X_test_flat)
 print("KNN After:")
 run_knn(dataset, X_train_embedded, y_train, X_test_embedded, y_test)
 
-print("\nRunning MRRE evaluation:")
 run_mrre(X_train_flat, X_train_embedded)
+run_continuity(X_train_flat, X_train_embedded)
 
 # visualize the reducer
 fig, ax = plt.subplots(1, 1, figsize=(6, 6))
