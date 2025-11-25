@@ -1,26 +1,28 @@
 import sys
-import pacmap
 import numpy as np
-import matplotlib.pyplot as plt
-from DataLoader import DatasetLoader
 from knn import run_knn
-from trustworthiness_eval import pacmap_embedding
-from trustworthiness_eval import pca_embedding
-from trustworthiness_eval import run_trustworthiness
 from mrre import run_mrre
+import matplotlib.pyplot as plt
+from embedding import pca_embedding
+from DataLoader import DatasetLoader
 from continuity import run_continuity
+from embedding import pacmap_embedding
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
+from trustworthiness_eval import run_trustworthiness
 
+## Set initial flags
+knn = trust = mrre = continuity = plot = False
 
-dataset = sys.argv[1] if len(sys.argv) > 1 else input("Which dataset would you like to test with?\n")
+## Read user arguments 
+dataset = sys.argv[1] if len(sys.argv) > 1 else input("Which dataset would you like to test with? Options: coil20 - coil20-npy - mnist - olivetti\n")
 reducer_type = sys.argv[2] if len(sys.argv) > 2 else "pacmap"
-eval_metric = sys.argv[3] if len(sys.argv) > 3 else None
+eval_metric = sys.argv[3] if len(sys.argv) > 3 else "all"
+plot = True if len(sys.argv) > 4 and sys.argv[4] == 'plot' else False
 
 # if type(dataset) != list
 match dataset:
     case 'coil20':
-       loader = DatasetLoader('coil20',
+       loader = DatasetLoader(dataset,
                 dataset_path='../datasets/coil-20'
                 )
     case 'coil20-npy':
@@ -29,11 +31,11 @@ match dataset:
                 labels_path='../datasets/coil20/coil_20_labels.npy'
                 )
     case 'mnist':
-        loader = DatasetLoader('mnist',
-                training_images='datasets/MNIST/train-images.idx3-ubyte',
-                training_labels='datasets/MNIST/train-labels.idx1-ubyte',
-                test_images='datasets/MNIST/t10k-images.idx3-ubyte',
-                test_labels='datasets/MNIST/t10k-labels.idx1-ubyte'
+        loader = DatasetLoader(dataset,
+                training_images='../datasets/MNIST/train-images.idx3-ubyte',
+                training_labels='../datasets/MNIST/train-labels.idx1-ubyte',
+                test_images='../datasets/MNIST/t10k-images.idx3-ubyte',
+                test_labels='../datasets/MNIST/t10k-labels.idx1-ubyte'
                 )
     case 'olivetti':
         loader = DatasetLoader('npy', 
@@ -42,46 +44,70 @@ match dataset:
                 )
 
 match reducer_type:
-    case 'pacmap': reducer = pacmap_embedding
     case 'pca': reducer = pca_embedding
+    case 'pacmap': reducer = pacmap_embedding
 
-# loading preprocessed 
+match eval_metric:
+    case 'knn': knn = True
+    case 'trustworthiness': trust = True
+    case 'mrre': mrre = True
+    case 'continuity': continuity = True
+    case 'all': knn = trust = mrre = continuity = True
+
+## loading preprocessed 
 (X_train, y_train), (X_test, y_test) = loader.load_data()
 
-# Flatten if necessary / flatten is used also reducer, so instead it of doing it in each function, do it once
+## Flatten data
 X_train = np.array(X_train)
 X_test = np.array(X_test)
+print("X_train shape:", X_train.shape)
+print("X_test shape:", X_test.shape)
 X_train_flat = X_train.reshape(X_train.shape[0], -1)
 X_test_flat = X_test.reshape(X_test.shape[0], -1)
+print("X_train flattened shape:", X_train_flat.shape)
+print("X_test flattened shape:", X_test_flat.shape)
+print()
 
+## Apply DR technique
+print("Generating embeddings...")
+X_train_embedded, X_test_embedded = reducer(X_train_flat, X_test_flat)
+print("X_train embedded shape:", X_train_embedded.shape)
+print("X_test embedded shape:", X_test_embedded.shape)
+print()
+
+## Evaluation Metrics
+# run knn
+if knn:
+    print("Run KNN on ==> ", dataset)
+    print("KNN Before:")
+    run_knn(X_train_flat, y_train, X_test_flat, y_test)
+
+    print("KNN After:")
+    run_knn(X_train_embedded, y_train, X_test_embedded, y_test)
+    print()
 
 # Get trustworthiness
-run_trustworthiness(dataset, X_train_flat, y_train, X_test_flat, y_test, embedding_func=reducer)
+if trust:
+    if dataset == 'mnist':
+        print("Run Trustworthiness on ==> ", dataset)
+        X_train_flat = X_train_flat.astype('float32')
+        X_train_embedded = X_train_embedded.astype('float32')
+        X_test_flat = X_test_flat.astype('float32')
+        X_test_embedded = X_test_embedded.astype('float32')
+        run_trustworthiness(X_train_flat, X_train_embedded, X_test_flat, X_test_embedded, embedding_func=reducer)
+    else:
+        print("Run Trustworthiness on ==> ", dataset)
+        run_trustworthiness(X_train_flat, X_train_embedded, X_test_flat, X_test_embedded, embedding_func=reducer)
 
+if mrre:
+    run_mrre(X_train_flat, X_train_embedded)
 
-# run knn
-print("KNN Before:")
-run_knn(dataset, X_train, y_train, X_test, y_test)
+if continuity:
+    run_continuity(X_train_flat, X_train_embedded)
 
-
-# initializing the DR instance
-X_train_embedded, X_test_embedded = reducer(X_train_flat, X_test_flat)
-
-print("KNN After:")
-run_knn(dataset, X_train_embedded, y_train, X_test_embedded, y_test)
-
-run_mrre(X_train_flat, X_train_embedded)
-run_continuity(X_train_flat, X_train_embedded)
 
 # visualize the reducer
-fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-ax.scatter(X_train_embedded[:, 0], X_train_embedded[:, 1], cmap="Spectral", c=y_train, s=0.6)
-plt.savefig('after.png')
-
-
-
-# saving the reducer
-# pacmap.save(reducer, "./coil_20_reducer")
-
-# loading the reducer
-# pacmap.load("./coil_20_reducer")
+if plot:
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    ax.scatter(X_train_embedded[:, 0], X_train_embedded[:, 1], cmap="Spectral", c=y_train, s=0.6)
+    plt.savefig('after.png')
