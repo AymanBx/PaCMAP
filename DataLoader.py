@@ -6,6 +6,7 @@ from array import array
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 
+## TODO: DO WE WANT TO SPLIT HERE? 
 
 class DatasetLoader:
     def __init__(self, dataset_type, **kwargs):
