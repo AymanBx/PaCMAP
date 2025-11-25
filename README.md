@@ -3,10 +3,10 @@ This project is done to experiment with the PaCMAP DR technique on different dat
 
 
 ## Example runs 
-python -u run.py coil20-npy > results/coil20-npy
-python -u run.py coil20-npy > results/coil20-npy_PaCMAP.log
-python -u run.py mnist > results/mnist_PaCMAP.log
-python -u run.py olivetti > results/olivetti_PaCMAP.log
+python -u run.py coil20 pacmap all plot
+python -u run.py coil20-npy pacmap none plot 3
+python -u run.py mnist pacmap knn no 2
+python -u run.py olivetti
 
 
 ## Experiment Results
