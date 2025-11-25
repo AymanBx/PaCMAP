@@ -41,7 +41,7 @@ def compute_mrre(X_high, X_low, K=10):
     return mrre
 
 
-def run_mrre(X_high, X_low):
+def run_mrre(X_high, X_low, log_file):
     """
     Compute MRRE for multiple K values: 1, 3, 5, 7, 9
     X_high: original high-dimensional data
@@ -49,8 +49,8 @@ def run_mrre(X_high, X_low):
     """
 
     K_values = [1, 3, 5, 7, 9]
-    print("\n=== MRRE Evaluation ===")
+    print("\n=== MRRE Evaluation ===", file=log_file)
 
     for K in K_values:
         mrre = compute_mrre(X_high, X_low, K=K)
-        print(f"MRRE (K={K}): {mrre:.4f}")
+        print(f"MRRE (K={K}): {mrre:.4f}", file=log_file)
