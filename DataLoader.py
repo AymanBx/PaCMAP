@@ -25,7 +25,7 @@ class DatasetLoader:
         if self.dataset_type not in ('coil20', 'mnist', 'npy','20newsgroups'):
             raise ValueError("dataset_type must be one of: 'coil20', 'mnist', 'npy'")
 
-    def _load_coil20(self):
+    def _load_coil20(self, split):
         dataset_path = self.kwargs.get('dataset_path')
         if not dataset_path:
             raise ValueError("Missing 'dataset_path' argument for COIL-20")
@@ -35,12 +35,17 @@ class DatasetLoader:
         y = np.array(labels)
         le = LabelEncoder()
         y_encoded = le.fit_transform(y)
+
+        # Return the data before splitting
+        if not split:
+            return X, y_encoded
+
         X_train, X_test, y_train, y_test = train_test_split(
             X, y_encoded, test_size=0.2, stratify=y_encoded, random_state=1)
         return (X_train, y_train), (X_test, y_test)
 
 
-    def _load_mnist(self):
+    def _load_mnist(self, split):
         req = ['training_images', 'training_labels', 'test_images', 'test_labels']
         for r in req:
             if r not in self.kwargs:
@@ -52,12 +57,18 @@ class DatasetLoader:
         x_test, y_test = read_mnist_images_labels(
             self.kwargs['test_images'], self.kwargs['test_labels']
         )
+
+        # Return the data not split
+        if not split:
+            return x_train + x_test, y_train + y_test
+
         return (x_train, y_train), (x_test, y_test)
+            
 
     # -------------------------------
     # Generic NumPy Dataset (.npy / .npz)
     # -------------------------------
-    def _load_npy(self):
+    def _load_npy(self, split):
         data_path = self.kwargs.get('data_path')
         labels_path = self.kwargs.get('labels_path')
         if not data_path:
@@ -79,31 +90,41 @@ class DatasetLoader:
         # Normalize or reshape if needed
         if X.ndim > 2:
             X = X.reshape(X.shape[0], -1)
+        
+        # Return the data before splitting
+        if not split:
+            return X, y
 
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, stratify=y if len(np.unique(y)) > 1 else None, random_state=1
         )
         return (X_train, y_train), (X_test, y_test)
     
-    def _load_20newsgroups(self):
+    def _load_20newsgroups(self, split):
         newsgroups = fetch_20newsgroups(subset='all')
         vectorizer = TfidfVectorizer(max_features=5000)  # Reduce to 5000 features for example
         X = vectorizer.fit_transform(newsgroups.data).toarray()  # Features
         y = newsgroups.target  # Labels
+
+        # Return the data before splitting
+        if not split:
+            return X, y
+            
         x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         return (x_train, y_train), (x_test, y_test)
     # -------------------------------
     # Call Loader
     # -------------------------------
-    def load_data(self):
+    def load_data(self, split):
         if self.dataset_type == 'coil20':
-            return self._load_coil20()
+            return self._load_coil20(split)
         elif self.dataset_type == 'mnist':
-            return self._load_mnist()
+            return self._load_mnist(split)
         elif self.dataset_type == 'npy':
-            return self._load_npy()
+            return self._load_npy(split)
         elif self.dataset_type == '20newsgroups':
-                return self._load_20newsgroups()
+                return self._load_20newsgroups(split)
+
 
 # -------------------------------
 # COIL-20
