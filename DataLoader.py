@@ -5,6 +5,8 @@ from PIL import Image
 from array import array
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 ## TODO: DO WE WANT TO SPLIT HERE? 
 
@@ -20,7 +22,7 @@ class DatasetLoader:
         self.dataset_type = dataset_type.lower()
         self.kwargs = kwargs
 
-        if self.dataset_type not in ('coil20', 'mnist', 'npy'):
+        if self.dataset_type not in ('coil20', 'mnist', 'npy','20newsgroups'):
             raise ValueError("dataset_type must be one of: 'coil20', 'mnist', 'npy'")
 
     def _load_coil20(self):
@@ -82,7 +84,14 @@ class DatasetLoader:
             X, y, test_size=0.2, stratify=y if len(np.unique(y)) > 1 else None, random_state=1
         )
         return (X_train, y_train), (X_test, y_test)
-
+    
+    def _load_20newsgroups(self):
+        newsgroups = fetch_20newsgroups(subset='all')
+        vectorizer = TfidfVectorizer(max_features=5000)  # Reduce to 5000 features for example
+        X = vectorizer.fit_transform(newsgroups.data).toarray()  # Features
+        y = newsgroups.target  # Labels
+        x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        return (x_train, y_train), (x_test, y_test)
     # -------------------------------
     # Call Loader
     # -------------------------------
@@ -93,7 +102,8 @@ class DatasetLoader:
             return self._load_mnist()
         elif self.dataset_type == 'npy':
             return self._load_npy()
-
+        elif self.dataset_type == '20newsgroups':
+                return self._load_20newsgroups()
 
 # -------------------------------
 # COIL-20

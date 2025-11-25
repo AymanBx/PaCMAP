@@ -42,6 +42,8 @@ match dataset:
                 data_path='../datasets/olivetti/olivetti_faces.npy', 
                 labels_path='../datasets/olivetti/olivetti_faces_target.npy'
                 )
+    case '20newsgroups':
+        loader = DatasetLoader('20newsgroups')
 
 match reducer_type:
     case 'pca': reducer = pca_embedding

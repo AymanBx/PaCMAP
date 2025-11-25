@@ -2,7 +2,7 @@ from pacmap import PaCMAP
 from sklearn.decomposition import PCA
 
 def pacmap_embedding(X_train, X_test):
-    pacmap_reducer = PaCMAP(random_state=42, n_components=2)
+    pacmap_reducer = PaCMAP(random_state=42, n_components=3)
     X_train_embedded = pacmap_reducer.fit_transform(X_train)
     X_test_embedded  = pacmap_reducer.transform(X_test, X_train)
     return X_train_embedded, X_test_embedded
