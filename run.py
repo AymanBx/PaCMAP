@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from embedding import pca_embedding
 from DataLoader import DatasetLoader
 from continuity import run_continuity
-from embedding import pacmap_embedding
+from embedding import pacmap_embedding, umap_embedding
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from trustworthiness_eval import run_trustworthiness
@@ -57,6 +57,7 @@ match dataset.lower():
 match reducer_type.lower():
     case 'pca': reducer = pca_embedding
     case 'pacmap': reducer = pacmap_embedding
+    case 'umap': reducer = umap_embedding
 
 match eval_metric.lower():
     case 'knn': knn = True

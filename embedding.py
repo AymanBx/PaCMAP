@@ -1,5 +1,6 @@
 from pacmap import PaCMAP
 from sklearn.decomposition import PCA
+import umap
 
 
 def pacmap_embedding(X_train, X_test, dimentions):
@@ -14,4 +15,11 @@ def pca_embedding(X_train, X_test, dimentions):
     X_train_embedded = pca.fit_transform(X_train)
     # Transform the test data using the same PCA model
     X_test_embedded = pca.transform(X_test)
+    return X_train_embedded, X_test_embedded
+
+
+def umap_embedding(X_train, X_test, dimensions):
+    umap_reducer = umap.UMAP(n_components=dimensions, random_state=42)
+    X_train_embedded = umap_reducer.fit_transform(X_train)
+    X_test_embedded = umap_reducer.transform(X_test)
     return X_train_embedded, X_test_embedded

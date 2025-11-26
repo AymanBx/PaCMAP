@@ -1,0 +1,43 @@
+X_train shape: (15076, 5000)
+X_test shape: (3770, 5000)
+X_train flattened shape: (15076, 5000)
+X_test flattened shape: (3770, 5000)
+
+Generating embeddings...
+X_train embedded shape: (15076, 2)
+X_test embedded shape: (3770, 2)
+
+Run KNN on ==>  20newsgroups
+KNN Before:
+k=1: 0.8034
+k=3: 0.7690
+k=5: 0.7637
+k=7: 0.7546
+k=9: 0.7469
+KNN After:
+k=1: 0.4968
+k=3: 0.5228
+k=5: 0.5523
+k=7: 0.5552
+k=9: 0.5692
+
+Run Trustworthiness on ==>  20newsgroups
+Trustworthiness (k=1) - Train: 0.8749, Test: 0.8434
+Trustworthiness (k=3) - Train: 0.8715, Test: 0.8312
+Trustworthiness (k=5) - Train: 0.8674, Test: 0.8188
+Trustworthiness (k=7) - Train: 0.8634, Test: 0.8056
+Trustworthiness (k=9) - Train: 0.8591, Test: 0.7933
+
+=== MRRE Evaluation ===
+MRRE (K=1): 859.0809
+MRRE (K=3): 544.5930
+MRRE (K=5): 432.2862
+MRRE (K=7): 370.2252
+MRRE (K=9): 329.5328
+
+=== Continuity Evaluation ===
+Continuity (K=1): 0.9430
+Continuity (K=3): 0.9397
+Continuity (K=5): 0.9326
+Continuity (K=7): 0.9255
+Continuity (K=9): 0.9188
