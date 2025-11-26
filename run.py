@@ -1,81 +1,133 @@
+import os
 import sys
-import pacmap
 import numpy as np
+from knn import run_knn
+from mrre import run_mrre
 import matplotlib.pyplot as plt
+from embedding import pca_embedding
+from DataLoader import DatasetLoader
+from continuity import run_continuity
+from embedding import pacmap_embedding
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
+from trustworthiness_eval import run_trustworthiness
 
+## Set initial flags
+knn = trust = mrre = continuity = plot = False
+split = False # Do we want to apply the DR technique before or after splitting
 
-datapath = sys.argv[1]
+## Read user arguments 
+dataset = sys.argv[1] if len(sys.argv) > 1 else input("Which dataset would you like to test with? Options: coil20 - coil20-npy - mnist - olivetti - 20newsgroups\n")
+reducer_type = sys.argv[2] if len(sys.argv) > 2 else "pacmap"
+eval_metric = sys.argv[3] if len(sys.argv) > 3 else "all"
+plot = True if len(sys.argv) > 4 and sys.argv[4] == 'plot' else False
+dimention = int(sys.argv[5] if len(sys.argv) > 5 else 2) # Change to select the new dimention size after DR
 
+## Setup log file
+os.chdir(f"results/{reducer_type}/{dimention}-dim")
+log = open(f"{dataset}_{reducer_type}-{dimention}.log", 'w')
+os.chdir("../../..")
 
-# loading preprocessed coil_20 dataset
-# you can change it with any dataset that is in the ndarray format, with the shape (N, D)
-# where N is the number of samples and D is the dimension of each sample
-X = np.load("./datasets/coil_20.npy", allow_pickle=True)
-y = np.load("./datasets/coil_20_labels.npy", allow_pickle=True)
-print("X: ", X.shape)
-print("y: ", y.shape)
+# if type(dataset) != list
+match dataset.lower():
+    case 'coil20':
+       loader = DatasetLoader(dataset,
+                dataset_path='../datasets/coil-20'
+                )
+    case 'coil20-npy':
+        loader = DatasetLoader('npy',
+                data_path='../datasets/coil20/coil_20.npy',
+                labels_path='../datasets/coil20/coil_20_labels.npy'
+                )
+    case 'mnist':
+        loader = DatasetLoader(dataset,
+                training_images='../datasets/MNIST/train-images.idx3-ubyte',
+                training_labels='../datasets/MNIST/train-labels.idx1-ubyte',
+                test_images='../datasets/MNIST/t10k-images.idx3-ubyte',
+                test_labels='../datasets/MNIST/t10k-labels.idx1-ubyte'
+                )
+    case 'olivetti':
+        loader = DatasetLoader('npy', 
+                data_path='../datasets/olivetti/olivetti_faces.npy', 
+                labels_path='../datasets/olivetti/olivetti_faces_target.npy'
+                )
+    case '20newsgroups':
+        loader = DatasetLoader('20newsgroups')
 
-X = X.reshape(X.shape[0], -1)
-print("X: ", X.shape)
+match reducer_type.lower():
+    case 'pca': reducer = pca_embedding
+    case 'pacmap': reducer = pacmap_embedding
 
+match eval_metric.lower():
+    case 'knn': knn = True
+    case 'trustworthiness': trust = True
+    case 'mrre': mrre = True
+    case 'continuity': continuity = True
+    case 'all': knn = trust = mrre = continuity = True
 
-# Can't plot images 
-# visualize the data as is..?
-# fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-# ax.scatter(X[:, 0], X[:, 1], cmap="Spectral", c=y, s=0.6)
-# plt.savefig('before.png')
+## loading preprocessed
+if split:
+    (X_train, y_train), (X_test, y_test) = loader.load_data(split)
+else:
+    X, y = loader.load_data(split)
 
-print("KNN Before:")
-# Get KNN before DR applies
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=1, stratify=y # stratify ensures proportions are the same before and after split.
-)
+    # We move the splitting to here to control how we apply the DR technique
+    X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, stratify=y if len(np.unique(y)) > 1 else None, random_state=1)
 
-for k in [1, 3, 5, 7, 9]:
-    knn = KNeighborsClassifier(n_neighbors=k)
-    knn.fit(X_train, y_train)
-    acc = knn.score(X_test, y_test)
-    print(f"k={k}: {acc:.4f}")
+## Flatten data
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+print("X_train shape:", X_train.shape, file=log)
+print("X_test shape:", X_test.shape, file=log)
+X_train_flat = X_train.reshape(X_train.shape[0], -1)
+X_test_flat = X_test.reshape(X_test.shape[0], -1)
+print("X_train flattened shape:", X_train_flat.shape, file=log)
+print("X_test flattened shape:", X_test_flat.shape, file=log)
+print(file=log)
 
+## Apply DR technique
+print("Generating embeddings...", file=log)
+X_train_embedded, X_test_embedded = reducer(X_train_flat, X_test_flat, dimention)
+print("X_train embedded shape:", X_train_embedded.shape, file=log)
+print("X_test embedded shape:", X_test_embedded.shape, file=log)
+print(file=log)
 
-# initializing the pacmap instance
-# n_components: the number of dimension of the output. Default to 2.
-# n_neighbors: the number of neighbors considered in the k-Nearest Neighbor graph.
-# MN_ratio: the ratio of the number of mid-near pairs to the number of neighbors, n_MN = \lfloor n_neighbors * MN_ratio
-# FP_ratio: the ratio of the number of further pairs to the number of neighbors, n_FP = \lfloor n_neighbors * FP_ratio
-# Setting n_neighbors to "None" leads to an automatic choice shown below in "parameter" section
-reducer = pacmap.PaCMAP(n_components=2, n_neighbors=10, MN_ratio=0.5, FP_ratio=2.0) 
+## Evaluation Metrics
+# run knn
+if knn:
+    print("Run KNN on ==> ", dataset, file=log)
+    print("KNN Before:", file=log)
+    run_knn(X_train_flat, y_train, X_test_flat, y_test, log)
 
-X_combined = np.vstack([X_train, X_test])
+    print("KNN After:", file=log)
+    run_knn(X_train_embedded, y_train, X_test_embedded, y_test, log)
+    print(file=log)
 
-print("KNN After:")
-# fit the data (The index of transformed data corresponds to the index of the original data)
-X_transformed = reducer.fit_transform(X_combined, init="pca")
-print("X: ", X_transformed.shape)
+# Get trustworthiness
+if trust:
+    if dataset == 'mnist':
+        print("Run Trustworthiness on ==> ", dataset, file=log)
+        X_train_flat = X_train_flat.astype('float32')
+        X_train_embedded = X_train_embedded.astype('float32')
+        X_test_flat = X_test_flat.astype('float32')
+        X_test_embedded = X_test_embedded.astype('float32')
+        run_trustworthiness(X_train_flat, X_train_embedded, X_test_flat, X_test_embedded, embedding_func=reducer, log_file=log)
+    else:
+        print("Run Trustworthiness on ==> ", dataset, file=log)
+        run_trustworthiness(X_train_flat, X_train_embedded, X_test_flat, X_test_embedded, embedding_func=reducer, log_file=log)
 
+if mrre:
+    run_mrre(X_train_flat, X_train_embedded, log)
 
-# Get KNN after the 
-X_train = X_transformed[0:len(X_train)]
-X_test = X_transformed[len(X_train):]
+if continuity:
+    run_continuity(X_train_flat, X_train_embedded, log)
 
-for k in [1, 3, 5, 7, 9]:
-    knn = KNeighborsClassifier(n_neighbors=k)
-    knn.fit(X_train, y_train)
-    acc = knn.score(X_test, y_test)
-    print(f"k={k}: {acc:.4f}")
-
+log.close()
 
 # visualize the reducer
-fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-ax.scatter(X_transformed[:, 0], X_transformed[:, 1], cmap="Spectral", c=y, s=0.6)
-plt.savefig('after.png')
-
-
-
-# saving the reducer
-# pacmap.save(reducer, "./coil_20_reducer")
-
-# loading the reducer
-# pacmap.load("./coil_20_reducer")
+if plot:
+    os.chdir(f"results/{reducer_type}/{dimention}-dim")
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    ax.scatter(X_train_embedded[:, 0], X_train_embedded[:, 1], cmap="Spectral", c=y_train, s=0.6)
+    plt.savefig(f'{dataset}_{reducer_type}-{dimention}.png')

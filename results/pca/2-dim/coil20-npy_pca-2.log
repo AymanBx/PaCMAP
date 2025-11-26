@@ -1,0 +1,43 @@
+X_train shape: (1152, 16384)
+X_test shape: (288, 16384)
+X_train flattened shape: (1152, 16384)
+X_test flattened shape: (288, 16384)
+
+Generating embeddings...
+X_train embedded shape: (1152, 2)
+X_test embedded shape: (288, 2)
+
+Run KNN on ==>  coil20-npy
+KNN Before:
+k=1: 0.9931
+k=3: 0.9722
+k=5: 0.9340
+k=7: 0.8958
+k=9: 0.8889
+KNN After:
+k=1: 0.6736
+k=3: 0.7049
+k=5: 0.7465
+k=7: 0.7500
+k=9: 0.7569
+
+Run Trustworthiness on ==>  coil20-npy
+Trustworthiness (k=1) - Train: 0.8954, Test: 0.8781
+Trustworthiness (k=3) - Train: 0.8961, Test: 0.8795
+Trustworthiness (k=5) - Train: 0.8949, Test: 0.8727
+Trustworthiness (k=7) - Train: 0.8921, Test: 0.8746
+Trustworthiness (k=9) - Train: 0.8913, Test: 0.8709
+
+=== MRRE Evaluation ===
+MRRE (K=1): 10.9036
+MRRE (K=3): 8.9835
+MRRE (K=5): 8.2055
+MRRE (K=7): 7.6041
+MRRE (K=9): 7.1611
+
+=== Continuity Evaluation ===
+Continuity (K=1): 0.9905
+Continuity (K=3): 0.9861
+Continuity (K=5): 0.9816
+Continuity (K=7): 0.9780
+Continuity (K=9): 0.9747
