@@ -1,0 +1,43 @@
+X_train shape: (56000, 28, 28)
+X_test shape: (14000, 28, 28)
+X_train flattened shape: (56000, 784)
+X_test flattened shape: (14000, 784)
+
+Generating embeddings...
+X_train embedded shape: (56000, 3)
+X_test embedded shape: (14000, 3)
+
+Run KNN on ==>  mnist
+KNN Before:
+k=1: 0.9709
+k=3: 0.9723
+k=5: 0.9722
+k=7: 0.9717
+k=9: 0.9701
+KNN After:
+k=1: 0.4376
+k=3: 0.4622
+k=5: 0.4834
+k=7: 0.4949
+k=9: 0.4981
+
+Run Trustworthiness on ==>  mnist
+Trustworthiness (k=1) - Train: 0.8333, Test: 0.8339
+Trustworthiness (k=3) - Train: 0.8329, Test: 0.8352
+Trustworthiness (k=5) - Train: 0.8328, Test: 0.8346
+Trustworthiness (k=7) - Train: 0.8324, Test: 0.8343
+Trustworthiness (k=9) - Train: 0.8320, Test: 0.8340
+
+=== MRRE Evaluation ===
+MRRE (K=1): 682.3687
+MRRE (K=3): 479.6138
+MRRE (K=5): 387.2023
+MRRE (K=7): 331.1274
+MRRE (K=9): 292.5055
+
+=== Continuity Evaluation ===
+Continuity (K=1): 0.9878
+Continuity (K=3): 0.9850
+Continuity (K=5): 0.9831
+Continuity (K=7): 0.9817
+Continuity (K=9): 0.9805
