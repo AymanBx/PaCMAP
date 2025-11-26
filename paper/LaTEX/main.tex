@@ -6,7 +6,7 @@
 \usepackage{booktabs}
 \usepackage{subcaption}
 \usepackage{stfloats}
-
+\usepackage{tabularx}
 
 
 
@@ -65,6 +65,127 @@ The work is published as a GitHub repository with clear instructions on how to i
 this method using the PaCMAP Python library that can be found in the repository.}
 
 \section{Dataset}
+
+To evaluate PaCMAP on data of varying structure, dimensionality, and modality, we conducted experiments on four datasets: COIL-20, MNIST, Olivetti Faces, and 20 Newsgroups. While the original PaCMAP paper primarily evaluates image datasets, our study extends the scope by including a text dataset, allowing assessment of PaCMAP's robustness across heterogeneous data types.
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of datasets used in the experiments}
+\label{tab:datasets}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{l l X l}
+\hline
+\textbf{Dataset} & \textbf{Type} & \textbf{Description} & \textbf{Size} \\
+\hline
+
+COIL-20 &
+Image (object recognition) &
+The Columbia Object Image Library (COIL-20) contains 20 household objects photographed from 72 views at 5° intervals. Images are grayscale and captured under controlled lighting, making it suitable for clustering and manifold learning. &
+1,440 images \\
+
+MNIST &
+Image (digit classification) &
+MNIST consists of 28$\times$28 grayscale images of handwritten digits (0--9). It is widely used for dimensionality reduction due to its clear digit clusters and moderate size. &
+70,000 images \\
+
+Olivetti Faces &
+Image (face recognition) &
+Contains 64$\times$64 grayscale images of 40 individuals, with 10 images each showing variations in pose, lighting, and expression. It is more challenging due to subtle inter-class differences. &
+400 images \\
+
+20 Newsgroups &
+Text (topic classification) &
+Contains documents from 20 internet discussion groups on topics such as science, politics, and sports. Documents are converted into TF--IDF vectors, yielding high-dimensional sparse data suitable for evaluating manifold learning on text. &
+$\sim$18,000 documents \\
+\hline
+\end{tabularx}
+\end{table}
+
+
+\begin{figure}[htbp]
+\centering
+
+\begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sample_olivetti.png}
+    \caption{Samples from Olivetti Faces}
+    \label{fig:sample_olivetti}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sample_mnist.png}
+    \caption{Samples from MNIST}
+    \label{fig:sample_mnist}
+\end{subfigure}
+
+\vspace{0.5em}
+
+\begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sample_coil.png}
+    \caption{Samples from COIL-20}
+    \label{fig:sample_coil}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sample_20news.png}
+    \caption{Samples from 20 Newsgroups}
+    \label{fig:sample_20news}
+\end{subfigure}
+
+\caption{Sample images and representations from all datasets used in this study.}
+\label{fig:all_datasets}
+\end{figure}
+
+
+\subsection{Dataset Loading and Preprocessing}
+
+To ensure consistent handling of different datasets, we implemented a unified dataset loading framework. 
+Rather than relying on the original PaCMAP codebase, all datasets in our evaluation were processed using a 
+custom \texttt{DatasetLoader} class, which provides a standardized interface for image, NumPy-based, and text 
+datasets. This design enables reproducible preprocessing across modalities and simplifies the integration of 
+additional datasets.
+
+The loader supports four dataset types: COIL-20, MNIST, generic NumPy datasets (\texttt{.npy} or \texttt{.npz}), 
+and the 20 Newsgroups text corpus. Each dataset type uses a dedicated internal loading routine, while 
+routine tasks such as label encoding, reshaping, and train--test splitting are handled in a unified manner.
+
+\paragraph{COIL-20 Loader.}
+COIL-20 images are loaded from a directory structure where each class has its own folder. All images are 
+converted to grayscale and stored as two-dimensional NumPy arrays. Labels are extracted from the folder names 
+and encoded using \texttt{LabelEncoder}. The loader optionally applies an 80/20 stratified train--test split.
+
+\paragraph{MNIST Loader.}
+MNIST is read directly from its raw IDX binary files. Image and label files are parsed manually using 
+structured binary reading, ensuring independence from external MNIST utilities. Each image is reshaped to 
+28$\times$28 format. The loader can either return the original train--test partitions or merge them into a 
+single dataset when no split is requested.
+
+\paragraph{Generic NumPy Datasets.}
+For datasets stored in \texttt{.npy} or \texttt{.npz} format, the loader automatically detects whether the file 
+contains separated or combined data label arrays. Multi-dimensional inputs are flattened when necessary to 
+produce a two-dimensional feature matrix. If the dataset does not include labels, dummy labels are generated 
+to maintain compatibility with downstream methods.
+
+\paragraph{20 Newsgroups Loader.}
+To include a text modality, we added support for the 20 Newsgroups dataset. The raw documents are loaded using 
+\texttt{fetch\_20newsgroups}, and each document is transformed into a high-dimensional TF--IDF vector using the 
+\texttt{TfidfVectorizer}. To maintain consistency across datasets, the loader exposes the text data in the same 
+format as the image datasets: a feature matrix $X \in \mathbb{R}^{n \times d}$ and a corresponding label vector 
+
+\paragraph{Unified Interface.}
+All dataset types are accessed through a single \texttt{load\_data(split)} interface, where 
+\texttt{split} determines whether the loader returns the full dataset or an automatically generated 
+train--test split. This unified design ensures consistent preprocessing, reduces boilerplate code, and 
+facilitates experimentation across datasets of different modalities (images and text).\\\\
+This unified loading pipeline ensures consistent preprocessing and facilitates straightforward integration of additional datasets in future work.
+
+
+
+
+
 \section{Methodology}
 \section{Evaluation Techniques}
     \par{In order to evaluate how well PaCMAP worked on our datasets, we chose four separate metrics to cover a variety of aspects of how well the low-dimensional embedding preserves the structure of the original data. Our metrics include k-Nearest-Neighbors (kNN) accuracy, trustworthiness, continuity, and Mean Relative Rank Error (MRRE)}
