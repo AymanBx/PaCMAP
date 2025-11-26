@@ -8,11 +8,11 @@ The runner can take 5 arguments as follows:
 ```
 python run.py <dataset> <DR_technique> <Eval_metrics> <Plot flag> <dimensions>
 ```
-`<dataset>`: The available options are: coil20 - coil20-npy - mnist - olivetti - 20newsgroups (Required)
-`<DR_technique>`: The available options are: PaCMAP - PCA (default PaCMAP)
-`<Eval_metrics>`: The available options are: knn - trustworthiness - mrre - continuity - all - none (default all)
-`<Plot>`: type `plot` to turn the flag on. Anything else to keep it off (default False)
-`<dimensions>`: Select the number of dimensions you would like the DR technique to reduce to (default 2)
+- `<dataset>`: The available options are: coil20 - coil20-npy - mnist - olivetti - 20newsgroups (Required)
+- `<DR_technique>`: The available options are: PaCMAP - PCA (default PaCMAP)
+- `<Eval_metrics>`: The available options are: knn - trustworthiness - mrre - continuity - all - none (default all)
+- `<Plot>`: type `plot` to turn the flag on. Anything else to keep it off (default False)
+- `<dimensions>`: Select the number of dimensions you would like the DR technique to reduce to (default 2)
 All arguments are not enforced. But if you run the runner with no arguments you will be prompted to select a dataset from the options
 
 ## Example runs 
