@@ -4,7 +4,6 @@ X_train flattened shape: (15076, 5000)
 X_test flattened shape: (3770, 5000)
 
 Generating embeddings...
-Warning: random state is set to 42.
 X_train embedded shape: (15076, 2)
 X_test embedded shape: (3770, 2)
 

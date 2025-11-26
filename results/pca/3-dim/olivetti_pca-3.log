@@ -1,0 +1,43 @@
+X_train shape: (320, 4096)
+X_test shape: (80, 4096)
+X_train flattened shape: (320, 4096)
+X_test flattened shape: (80, 4096)
+
+Generating embeddings...
+X_train embedded shape: (320, 3)
+X_test embedded shape: (80, 3)
+
+Run KNN on ==>  olivetti
+KNN Before:
+k=1: 0.9375
+k=3: 0.8750
+k=5: 0.8625
+k=7: 0.8250
+k=9: 0.7500
+KNN After:
+k=1: 0.4125
+k=3: 0.4375
+k=5: 0.4375
+k=7: 0.3500
+k=9: 0.4000
+
+Run Trustworthiness on ==>  olivetti
+Trustworthiness (k=1) - Train: 0.9406, Test: 0.9048
+Trustworthiness (k=3) - Train: 0.9331, Test: 0.8981
+Trustworthiness (k=5) - Train: 0.9285, Test: 0.8957
+Trustworthiness (k=7) - Train: 0.9263, Test: 0.8940
+Trustworthiness (k=9) - Train: 0.9254, Test: 0.8945
+
+=== MRRE Evaluation ===
+MRRE (K=1): 6.7562
+MRRE (K=3): 5.6790
+MRRE (K=5): 4.9940
+MRRE (K=7): 4.4819
+MRRE (K=9): 4.0419
+
+=== Continuity Evaluation ===
+Continuity (K=1): 0.9788
+Continuity (K=3): 0.9685
+Continuity (K=5): 0.9616
+Continuity (K=7): 0.9572
+Continuity (K=9): 0.9553
