@@ -17,11 +17,11 @@ knn = trust = mrre = continuity = plot = False
 split = False # Do we want to apply the DR technique before or after splitting
 
 ## Read user arguments 
-dataset = sys.argv[1] if len(sys.argv) > 1 else input("Which dataset would you like to test with? Options: coil20 - coil20-npy - mnist - olivetti\n")
+dataset = sys.argv[1] if len(sys.argv) > 1 else input("Which dataset would you like to test with? Options: coil20 - coil20-npy - mnist - olivetti - 20newsgroups\n")
 reducer_type = sys.argv[2] if len(sys.argv) > 2 else "pacmap"
 eval_metric = sys.argv[3] if len(sys.argv) > 3 else "all"
 plot = True if len(sys.argv) > 4 and sys.argv[4] == 'plot' else False
-dimention = int(sys.argv[5] if len(sys.argv) > 5 else 3) # Change to select the new dimention size after DR
+dimention = int(sys.argv[5] if len(sys.argv) > 5 else 2) # Change to select the new dimention size after DR
 
 ## Setup log file
 os.chdir(f"results/{reducer_type}/{dimention}-dim")
@@ -29,7 +29,7 @@ log = open(f"{dataset}_{reducer_type}-{dimention}.log", 'w')
 os.chdir("../../..")
 
 # if type(dataset) != list
-match dataset:
+match dataset.lower():
     case 'coil20':
        loader = DatasetLoader(dataset,
                 dataset_path='../datasets/coil-20'
@@ -54,11 +54,11 @@ match dataset:
     case '20newsgroups':
         loader = DatasetLoader('20newsgroups')
 
-match reducer_type:
+match reducer_type.lower():
     case 'pca': reducer = pca_embedding
     case 'pacmap': reducer = pacmap_embedding
 
-match eval_metric:
+match eval_metric.lower():
     case 'knn': knn = True
     case 'trustworthiness': trust = True
     case 'mrre': mrre = True
